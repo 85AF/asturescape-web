@@ -1,0 +1,17 @@
+{application, crm_backend,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {crm_backend_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    jose,
+    fast_pbkdf2
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache-2.0"]},
+  {links, []}
+ ]}.
