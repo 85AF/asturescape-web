@@ -1,0 +1,65 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: transcription_backend
+    restart: unless-stopped
+    ports:
+      - "8001:8000" # Host:Container - Using 8001 on host to avoid conflicts
+    volumes:
+      - ./backend_data:/app/data # Persist SQLite DB and any other backend data here
+      - ./transcription_results:/app/transcription_results # Share transcription results
+      - ./temp_uploads:/app/temp_uploads # Share temporary uploads
+    env_file:
+      - .env
+    networks:
+      - app_network
+    # healthcheck: # Optional: Add a healthcheck for the backend
+    #   test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+
+  nginx:
+    build:
+      context: ./frontend
+      # args: # Example if passing build args to frontend Dockerfile
+        # VITE_API_BASE_URL: /api/
+        # VITE_WEBSOCKET_URL_PREFIX: /api # or empty if /ws is at root
+    container_name: transcription_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80" # Host:Container (e.g., access frontend via http://localhost:8080)
+    depends_on:
+      backend:
+        condition: service_started # Waits for backend container to start, not necessarily healthy
+        # For more robust startup, use a wait-for-it script or healthcheck dependency
+    volumes:
+      # Nginx needs access to transcription_results to serve them directly
+      # The path inside container (/app_data/transcription_results/) must match nginx.conf
+      - ./transcription_results:/app_data/transcription_results:ro
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+# Named volumes are not strictly necessary if using bind mounts as above,
+# but can be defined if preferred for data persistence managed by Docker.
+# volumes:
+#   backend_db_data:
+#   transcription_results_data: # This would be shared by backend (rw) and nginx (ro)
+#   temp_uploads_data:
+# If using named volumes, update the service volume definitions accordingly, e.g.:
+# backend:
+#   volumes:
+#     - backend_db_data:/app/data
+#     - transcription_results_data:/app/transcription_results
+#     - temp_uploads_data:/app/temp_uploads
+# nginx:
+#   volumes:
+#     - transcription_results_data:/app_data/transcription_results:ro
+# This example uses bind mounts for easier development access to the files.

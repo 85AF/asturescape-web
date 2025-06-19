@@ -4,3 +4,10 @@ pydub
 openai
 sqlmodel
 python-multipart
+
+# Testing dependencies
+pytest
+pytest-cov
+httpx
+pytest-asyncio
+# respx
