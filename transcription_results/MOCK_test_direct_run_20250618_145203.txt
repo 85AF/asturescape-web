@@ -1,0 +1,4 @@
+[00:00:00] Hello world.
+[00:00:03] This is a test.
+[00:00:11] Second chunk here.
+[00:00:20] Final segment.
