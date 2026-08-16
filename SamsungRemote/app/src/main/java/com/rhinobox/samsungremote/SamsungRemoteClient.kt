@@ -125,11 +125,13 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
     fun launchApp(appId: String) {
         val data = JSONObject()
             .put("appId", appId)
-            .put("action_type", "DEEP_LINK")
+            .put("action_type", "NATIVE_LAUNCH")
+            .put("metaTag", "")
         val params = JSONObject()
             .put("event", "ed.apps.launch")
             .put("to", "host")
             .put("data", data)
-        ws?.send(JSONObject().put("method", "ms.channel.emit").put("params", params).toString())
+        val sent = ws?.send(JSONObject().put("method", "ms.channel.emit").put("params", params).toString()) ?: false
+        if (!sent) onStatus("No se pudo enviar el acceso directo", false)
     }
 }
