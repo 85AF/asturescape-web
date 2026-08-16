@@ -14,25 +14,18 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
     private var token: String? = null
     private var triedPlain = false
     private var prefs: android.content.SharedPreferences? = null
-
     fun attach(context: android.content.Context) { prefs = context.getSharedPreferences("samsung_remote", 0) }
-
     private fun client(): OkHttpClient {
         val trustAll = arrayOf<TrustManager>(object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
             override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
             override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
         })
-        val sc = SSLContext.getInstance("TLS")
-        sc.init(null, trustAll, SecureRandom())
+        val sc = SSLContext.getInstance("TLS"); sc.init(null, trustAll, SecureRandom())
         return OkHttpClient.Builder().connectTimeout(4, TimeUnit.SECONDS).readTimeout(0, TimeUnit.SECONDS)
             .sslSocketFactory(sc.socketFactory, trustAll[0] as X509TrustManager).hostnameVerifier { _, _ -> true }.build()
     }
-
-    fun connect(host: String) {
-        ip = host.trim(); if (ip.isBlank()) return
-        token = prefs?.getString("token_$ip", null); triedPlain = false; connectSecure()
-    }
+    fun connect(host: String) { ip = host.trim(); if (ip.isBlank()) return; token = prefs?.getString("token_$ip", null); triedPlain = false; connectSecure() }
     private fun connectSecure() { onStatus("Conectando a $ip…", false); open("wss://$ip:8002/api/v2/channels/samsung.remote.control") }
     private fun connectPlain() { triedPlain = true; onStatus("Probando conexión alternativa…", false); open("ws://$ip:8001/api/v2/channels/samsung.remote.control") }
     private fun open(base: String) {
@@ -56,30 +49,30 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) { onStatus("Desconectado", false) }
     }
     fun disconnect() { ws?.close(1000, "bye"); ws = null; onStatus("Sin conexión", false) }
-
     fun key(key: String) {
         val p = JSONObject().put("Cmd", "Click").put("DataOfCmd", key).put("Option", "false").put("TypeOfRemote", "SendRemoteKey")
         ws?.send(JSONObject().put("method", "ms.remote.control").put("params", p).toString())
     }
-
     fun text(value: String) {
         val encoded = Base64.encodeToString(value.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         val p = JSONObject().put("Cmd", encoded).put("DataOfCmd", "base64").put("TypeOfRemote", "SendInputString")
         ws?.send(JSONObject().put("method", "ms.remote.control").put("params", p).toString())
     }
-
-    fun launchApp(appId: String) { launchApp(appId, null) }
-
-    fun launchApp(appId: String, fallbackKey: String?) {
+    fun launchApp(appId: String) {
+        when (appId) {
+            "11101200001" -> streamingShortcut("netflix")
+            "3201512006785" -> streamingShortcut("prime")
+            "111299001912" -> streamingShortcut("youtube")
+            else -> emitLaunch(appId)
+        }
+    }
+    private fun emitLaunch(appId: String) {
         val data = JSONObject().put("appId", appId).put("action_type", "DEEP_LINK").put("metaTag", "")
         val params = JSONObject().put("event", "ed.apps.launch").put("to", "host").put("data", data)
         val sent = ws?.send(JSONObject().put("method", "ms.channel.emit").put("params", params).toString()) ?: false
-        if (!sent && fallbackKey != null) key(fallbackKey)
+        if (!sent) onStatus("No se pudo enviar el acceso directo", false)
     }
-
     fun streamingShortcut(service: String) {
-        // Dedicated remote keys work on Samsung models that expose the same physical shortcut keys.
-        // We send the key first, then a DEEP_LINK fallback shortly after for models that ignore it.
         val (keyName, appId) = when (service.lowercase()) {
             "netflix" -> "KEY_NETFLIX" to "11101200001"
             "prime", "primevideo", "prime video" -> "KEY_PRIME" to "3201512006785"
@@ -87,6 +80,6 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
             else -> return
         }
         key(keyName)
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ launchApp(appId, null) }, 450)
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ emitLaunch(appId) }, 450)
     }
 }
