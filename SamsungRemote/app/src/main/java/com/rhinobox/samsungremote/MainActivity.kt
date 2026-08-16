@@ -112,7 +112,8 @@ class MainActivity : Activity() {
         }
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(14.dp, 6.dp, 14.dp, 8.dp)
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(14.dp, 8.dp, 14.dp, 8.dp)
         }
         scroll.addView(root)
         setContentView(scroll)
