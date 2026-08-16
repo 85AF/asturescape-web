@@ -113,7 +113,7 @@ class MainActivity : Activity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(14.dp, 8.dp, 14.dp, 8.dp)
+            setPadding(14.dp, 6.dp, 14.dp, 6.dp)
         }
         scroll.addView(root)
         setContentView(scroll)
@@ -133,39 +133,39 @@ class MainActivity : Activity() {
         header.addView(discover, LinearLayout.LayoutParams(54.dp, 54.dp).apply { setMargins(6.dp, 0, 0, 0) })
         root.addView(header)
 
-        val upper = LinearLayout(this).apply { gravity = Gravity.CENTER; setPadding(0, 6.dp, 0, 0) }
+        val upper = LinearLayout(this).apply { gravity = Gravity.CENTER; setPadding(0, 5.dp, 0, 0) }
         val volume = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             background = shape(card, 26f); elevation = 3.dp.toFloat()
-            addView(cardButton("＋", "KEY_VOLUP", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 49.dp))
-            addView(textLabel("VOL", 11f, ink, true), LinearLayout.LayoutParams(-1, 24.dp))
-            addView(cardButton("−", "KEY_VOLDOWN", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 49.dp))
+            addView(cardButton("＋", "KEY_VOLUP", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
+            addView(textLabel("VOL", 11f, ink, true), LinearLayout.LayoutParams(-1, 22.dp))
+            addView(cardButton("−", "KEY_VOLDOWN", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
         }
-        upper.addView(volume, LinearLayout.LayoutParams(66.dp, 122.dp).apply { setMargins(0, 2.dp, 4.dp, 2.dp) })
+        upper.addView(volume, LinearLayout.LayoutParams(66.dp, 116.dp).apply { setMargins(0, 2.dp, 4.dp, 2.dp) })
 
         val middle = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val r1 = LinearLayout(this)
-        addWeighted(r1, cardButton("⌁\nMUTE", "KEY_MUTE", 11f), 56)
-        addWeighted(r1, cardButton("↪\nEXIT", "KEY_EXIT", 11f), 56)
+        addWeighted(r1, cardButton("⌁\nMUTE", "KEY_MUTE", 11f), 53)
+        addWeighted(r1, cardButton("↪\nEXIT", "KEY_EXIT", 11f), 53)
         middle.addView(r1)
         val r2 = LinearLayout(this)
-        addWeighted(r2, cardButton("⌂\nHOME", "KEY_HOME", 11f), 56)
-        addWeighted(r2, cardButton("↶\nBACK", "KEY_RETURN", 11f), 56)
+        addWeighted(r2, cardButton("⌂\nHOME", "KEY_HOME", 11f), 53)
+        addWeighted(r2, cardButton("↶\nBACK", "KEY_RETURN", 11f), 53)
         middle.addView(r2)
-        upper.addView(middle, LinearLayout.LayoutParams(0, 122.dp, 1f))
+        upper.addView(middle, LinearLayout.LayoutParams(0, 116.dp, 1f))
 
         val channel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             background = shape(card, 26f); elevation = 3.dp.toFloat()
-            addView(cardButton("⌃", "KEY_CHUP", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 49.dp))
-            addView(textLabel("CH", 11f, ink, true), LinearLayout.LayoutParams(-1, 24.dp))
-            addView(cardButton("⌄", "KEY_CHDOWN", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 49.dp))
+            addView(cardButton("⌃", "KEY_CHUP", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
+            addView(textLabel("CH", 11f, ink, true), LinearLayout.LayoutParams(-1, 22.dp))
+            addView(cardButton("⌄", "KEY_CHDOWN", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
         }
-        upper.addView(channel, LinearLayout.LayoutParams(66.dp, 122.dp).apply { setMargins(4.dp, 2.dp, 0, 2.dp) })
+        upper.addView(channel, LinearLayout.LayoutParams(66.dp, 116.dp).apply { setMargins(4.dp, 2.dp, 0, 2.dp) })
         root.addView(upper)
 
         contentHost = FrameLayout(this)
-        root.addView(contentHost, LinearLayout.LayoutParams(-1, 224.dp).apply { setMargins(0, 4.dp, 0, 2.dp) })
+        root.addView(contentHost, LinearLayout.LayoutParams(-1, 210.dp).apply { setMargins(0, 3.dp, 0, 1.dp) })
         showDirectional()
 
         val modeBar = LinearLayout(this).apply {
@@ -174,45 +174,57 @@ class MainActivity : Activity() {
             setPadding(3.dp, 2.dp, 3.dp, 2.dp)
             elevation = 1.dp.toFloat()
         }
-        addWeighted(modeBar, cardButton("◉", size = 16f, radius = 20f, elevationDp = 0, action = { showDirectional() }), 40, marginDp = 1)
-        addWeighted(modeBar, cardButton("▭", size = 16f, radius = 20f, elevationDp = 0, action = { showTouchpad() }), 40, marginDp = 1)
-        addWeighted(modeBar, cardButton("123", size = 14f, radius = 20f, elevationDp = 0, action = { showNumbers() }), 40, marginDp = 1)
-        root.addView(modeBar, LinearLayout.LayoutParams(-1, 46.dp).apply { setMargins(52.dp, 2.dp, 52.dp, 5.dp) })
+        addWeighted(modeBar, cardButton("◉", size = 16f, radius = 20f, elevationDp = 0, action = { showDirectional() }), 38, marginDp = 1)
+        addWeighted(modeBar, cardButton("▭", size = 16f, radius = 20f, elevationDp = 0, action = { showTouchpad() }), 38, marginDp = 1)
+        addWeighted(modeBar, cardButton("123", size = 14f, radius = 20f, elevationDp = 0, action = { showNumbers() }), 38, marginDp = 1)
+        root.addView(modeBar, LinearLayout.LayoutParams(-1, 44.dp).apply { setMargins(52.dp, 1.dp, 52.dp, 3.dp) })
 
         val tools = LinearLayout(this)
-        addWeighted(tools, cardButton("⌕\nSEARCH", "KEY_SEARCH", 9.5f), 50, marginDp = 3)
-        addWeighted(tools, cardButton("⌨\nKEYBOARD", size = 9.5f, action = { keyboardDialog() }), 50, marginDp = 3)
-        addWeighted(tools, cardButton("↪\nSOURCE", "KEY_SOURCE", 9.5f), 50, marginDp = 3)
-        addWeighted(tools, cardButton("▤\nE-MANUAL", "KEY_E-MANUAL", 9.5f), 50, marginDp = 3)
+        addWeighted(tools, cardButton("⌕\nSEARCH", "KEY_SEARCH", 9.2f), 46, marginDp = 2)
+        addWeighted(tools, cardButton("⌨\nKEYBOARD", size = 9.2f, action = { keyboardDialog() }), 46, marginDp = 2)
+        addWeighted(tools, cardButton("↪\nSOURCE", "KEY_SOURCE", 9.2f), 46, marginDp = 2)
+        addWeighted(tools, cardButton("▤\nE-MANUAL", "KEY_E-MANUAL", 9.2f), 46, marginDp = 2)
         root.addView(tools)
 
         val media = LinearLayout(this)
-        addWeighted(media, cardButton("◀◀", "KEY_REWIND", 15f), 44, marginDp = 3)
-        addWeighted(media, cardButton("▶Ⅱ", "KEY_PLAY", 15f), 44, marginDp = 3)
-        addWeighted(media, cardButton("▶▶", "KEY_FF", 15f, accent), 44, marginDp = 3)
-        addWeighted(media, cardButton("■", "KEY_STOP", 15f), 44, marginDp = 3)
+        addWeighted(media, cardButton("◀◀", "KEY_REWIND", 15f), 40, marginDp = 2)
+        addWeighted(media, cardButton("▶Ⅱ", "KEY_PLAY", 15f), 40, marginDp = 2)
+        addWeighted(media, cardButton("▶▶", "KEY_FF", 15f, accent), 40, marginDp = 2)
+        addWeighted(media, cardButton("■", "KEY_STOP", 15f), 40, marginDp = 2)
         root.addView(media)
 
         val more = LinearLayout(this)
-        addWeighted(more, cardButton("INFO", "KEY_INFO", 9.5f), 40, marginDp = 3)
-        addWeighted(more, cardButton("GUIDE", "KEY_GUIDE", 9.5f), 40, marginDp = 3)
-        addWeighted(more, cardButton("MENU", "KEY_MENU", 9.5f), 40, marginDp = 3)
-        addWeighted(more, cardButton("CH-LIST", "KEY_CH_LIST", 9.5f), 40, marginDp = 3)
+        addWeighted(more, cardButton("INFO", "KEY_INFO", 9.2f), 36, marginDp = 2)
+        addWeighted(more, cardButton("GUIDE", "KEY_GUIDE", 9.2f), 36, marginDp = 2)
+        addWeighted(more, cardButton("MENU", "KEY_MENU", 9.2f), 36, marginDp = 2)
+        addWeighted(more, cardButton("CH-LIST", "KEY_CH_LIST", 9.2f), 36, marginDp = 2)
         root.addView(more)
+
+        val quick1 = LinearLayout(this)
+        addWeighted(quick1, cardButton("prime video", size = 10.2f, radius = 18f, action = { remote.launchApp("3201512006785") }), 39, marginDp = 2)
+        addWeighted(quick1, cardButton("NETFLIX", size = 10.5f, radius = 18f, action = { remote.launchApp("11101200001") }), 39, marginDp = 2)
+        addWeighted(quick1, cardButton("▶ YouTube", size = 10.2f, radius = 18f, action = { remote.launchApp("111299001912") }), 39, marginDp = 2)
+        root.addView(quick1, LinearLayout.LayoutParams(-1, 43.dp).apply { setMargins(2.dp, 2.dp, 2.dp, 0) })
+
+        val quick2 = LinearLayout(this)
+        addWeighted(quick2, cardButton("▦ APPS", size = 10.2f, radius = 18f, action = { remote.key("KEY_HOME") }), 39, marginDp = 2)
+        addWeighted(quick2, cardButton("▣ CAST", size = 10.2f, radius = 18f, action = { remote.key("KEY_SOURCE") }), 39, marginDp = 2)
+        addWeighted(quick2, cardButton("⌨ TECLADO", size = 10.2f, radius = 18f, action = { keyboardDialog() }), 39, marginDp = 2)
+        root.addView(quick2, LinearLayout.LayoutParams(-1, 43.dp).apply { setMargins(2.dp, 0, 2.dp, 0) })
     }
 
     private fun showDirectional() {
         contentHost.removeAllViews()
-        val pad = FrameLayout(this).apply { background = shape(card, 112f); elevation = 4.dp.toFloat() }
+        val pad = FrameLayout(this).apply { background = shape(card, 104f); elevation = 4.dp.toFloat() }
         fun place(view: View, w: Int, h: Int, gravity: Int, ml: Int = 0, mt: Int = 0, mr: Int = 0, mb: Int = 0) {
             pad.addView(view, FrameLayout.LayoutParams(w.dp, h.dp, gravity).apply { setMargins(ml.dp, mt.dp, mr.dp, mb.dp) })
         }
-        place(cardButton("⌃", "KEY_UP", 24f, elevationDp = 0).apply { background = null }, 66, 46, Gravity.TOP or Gravity.CENTER_HORIZONTAL, mt = 8)
-        place(cardButton("‹", "KEY_LEFT", 34f, elevationDp = 0).apply { background = null }, 56, 66, Gravity.CENTER_VERTICAL or Gravity.LEFT, ml = 8)
-        place(cardButton("OK", "KEY_ENTER", 16f, radius = 44f, elevationDp = 2).apply { background = shape(Color.rgb(250,251,254), 44f, accent) }, 88, 88, Gravity.CENTER)
-        place(cardButton("›", "KEY_RIGHT", 34f, elevationDp = 0).apply { background = null }, 56, 66, Gravity.CENTER_VERTICAL or Gravity.RIGHT, mr = 8)
-        place(cardButton("⌄", "KEY_DOWN", 24f, elevationDp = 0).apply { background = null }, 66, 46, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, mb = 8)
-        contentHost.addView(pad, FrameLayout.LayoutParams(214.dp, 214.dp, Gravity.CENTER))
+        place(cardButton("⌃", "KEY_UP", 23f, elevationDp = 0).apply { background = null }, 62, 43, Gravity.TOP or Gravity.CENTER_HORIZONTAL, mt = 7)
+        place(cardButton("‹", "KEY_LEFT", 32f, elevationDp = 0).apply { background = null }, 52, 62, Gravity.CENTER_VERTICAL or Gravity.LEFT, ml = 7)
+        place(cardButton("OK", "KEY_ENTER", 15.5f, radius = 42f, elevationDp = 2).apply { background = shape(Color.rgb(250,251,254), 42f, accent) }, 84, 84, Gravity.CENTER)
+        place(cardButton("›", "KEY_RIGHT", 32f, elevationDp = 0).apply { background = null }, 52, 62, Gravity.CENTER_VERTICAL or Gravity.RIGHT, mr = 7)
+        place(cardButton("⌄", "KEY_DOWN", 23f, elevationDp = 0).apply { background = null }, 62, 43, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, mb = 7)
+        contentHost.addView(pad, FrameLayout.LayoutParams(202.dp, 202.dp, Gravity.CENTER))
     }
 
     private fun showTouchpad() {
@@ -220,8 +232,8 @@ class MainActivity : Activity() {
         val pad = TouchPadView(this) { key -> remote.key(key) }.apply { background = shape(card, 24f, border); elevation = 3.dp.toFloat() }
         val wrap = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            addView(pad, LinearLayout.LayoutParams(-1, 170.dp).apply { setMargins(8.dp, 8.dp, 8.dp, 2.dp) })
-            addView(textLabel("Desliza para navegar · toca para OK", 10f, muted), LinearLayout.LayoutParams(-1, 28.dp))
+            addView(pad, LinearLayout.LayoutParams(-1, 158.dp).apply { setMargins(8.dp, 7.dp, 8.dp, 1.dp) })
+            addView(textLabel("Desliza para navegar · toca para OK", 9.5f, muted), LinearLayout.LayoutParams(-1, 26.dp))
         }
         contentHost.addView(wrap, FrameLayout.LayoutParams(-1, -1))
     }
@@ -231,7 +243,7 @@ class MainActivity : Activity() {
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(8.dp, 2.dp, 8.dp, 2.dp)
+            setPadding(8.dp, 1.dp, 8.dp, 1.dp)
         }
         val rows = listOf(
             listOf("1", "2", "3"), listOf("4", "5", "6"),
@@ -245,9 +257,9 @@ class MainActivity : Activity() {
                     "CH-LIST" -> "KEY_CH_LIST"
                     else -> "KEY_$t"
                 }
-                addWeighted(row, cardButton(t, key, if (t.length == 1) 17f else 9f, radius = 21f), 44, marginDp = 2)
+                addWeighted(row, cardButton(t, key, if (t.length == 1) 16f else 8.7f, radius = 20f), 40, marginDp = 2)
             }
-            box.addView(row, LinearLayout.LayoutParams(-1, 50.dp))
+            box.addView(row, LinearLayout.LayoutParams(-1, 46.dp))
         }
         contentHost.addView(box, FrameLayout.LayoutParams(-1, -1))
     }
