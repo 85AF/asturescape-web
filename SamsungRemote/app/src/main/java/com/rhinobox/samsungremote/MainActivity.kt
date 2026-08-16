@@ -3,10 +3,13 @@ package com.rhinobox.samsungremote
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
@@ -14,6 +17,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -37,6 +41,8 @@ class MainActivity : Activity() {
     private val accent = Color.rgb(82, 91, 235)
     private val green = Color.rgb(38, 196, 103)
     private val red = Color.rgb(238, 53, 66)
+    private val quickBg = Color.rgb(12, 29, 52)
+    private val quickCard = Color.rgb(25, 48, 78)
 
     private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
 
@@ -76,30 +82,32 @@ class MainActivity : Activity() {
             if (bold) setTypeface(typeface, Typeface.BOLD)
         }
 
-    private fun cardButton(
-        text: String,
-        key: String? = null,
-        size: Float = 13f,
-        textColor: Int = ink,
-        radius: Float = 20f,
-        elevationDp: Int = 2,
-        action: (() -> Unit)? = null
-    ): TextView = textLabel(text, size, textColor).apply {
-        background = shape(card, radius)
-        elevation = elevationDp.dp.toFloat()
-        setPadding(4.dp, 3.dp, 4.dp, 3.dp)
+    private fun cardButton(text: String, key: String? = null, size: Float = 13f, textColor: Int = ink, radius: Float = 20f, elevationDp: Int = 2, action: (() -> Unit)? = null): TextView =
+        textLabel(text, size, textColor).apply {
+            background = shape(card, radius)
+            elevation = elevationDp.dp.toFloat()
+            setPadding(4.dp, 3.dp, 4.dp, 3.dp)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+                if (action != null) action() else key?.let { remote.key(it) }
+            }
+        }
+
+    private fun quickButton(text: String, action: () -> Unit): TextView = textLabel(text, 10.4f, Color.WHITE, true).apply {
+        background = shape(quickCard, 18f, Color.rgb(44, 68, 101))
+        elevation = 1.dp.toFloat()
+        setPadding(4.dp, 2.dp, 4.dp, 2.dp)
         isClickable = true
-        isFocusable = true
         setOnClickListener {
             performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
-            if (action != null) action() else key?.let { remote.key(it) }
+            action()
         }
     }
 
     private fun addWeighted(row: LinearLayout, view: View, heightDp: Int, weight: Float = 1f, marginDp: Int = 3) {
-        row.addView(view, LinearLayout.LayoutParams(0, heightDp.dp, weight).apply {
-            setMargins(marginDp.dp, marginDp.dp, marginDp.dp, marginDp.dp)
-        })
+        row.addView(view, LinearLayout.LayoutParams(0, heightDp.dp, weight).apply { setMargins(marginDp.dp, marginDp.dp, marginDp.dp, marginDp.dp) })
     }
 
     private fun buildUi() {
@@ -119,30 +127,24 @@ class MainActivity : Activity() {
         setContentView(scroll)
 
         val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        val power = cardButton("⏻", "KEY_POWER", 25f, red, 26f, 3)
-        header.addView(power, LinearLayout.LayoutParams(54.dp, 54.dp).apply { setMargins(0, 0, 6.dp, 0) })
-
+        header.addView(cardButton("⏻", "KEY_POWER", 25f, red, 26f, 3), LinearLayout.LayoutParams(54.dp, 54.dp).apply { setMargins(0, 0, 6.dp, 0) })
         val center = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
         tvName = textLabel("Samsung TV", 19f, ink, true)
         status = textLabel("●  Buscando TV…", 11f, muted)
         center.addView(tvName, LinearLayout.LayoutParams(-1, 28.dp))
         center.addView(status, LinearLayout.LayoutParams(-1, 20.dp))
         header.addView(center, LinearLayout.LayoutParams(0, 54.dp, 1f))
-
-        val discover = cardButton("⌁", size = 22f, radius = 26f, elevationDp = 3, action = { discoverTvs() })
-        header.addView(discover, LinearLayout.LayoutParams(54.dp, 54.dp).apply { setMargins(6.dp, 0, 0, 0) })
+        header.addView(cardButton("⌁", size = 22f, radius = 26f, elevationDp = 3, action = { discoverTvs() }), LinearLayout.LayoutParams(54.dp, 54.dp).apply { setMargins(6.dp, 0, 0, 0) })
         root.addView(header)
 
         val upper = LinearLayout(this).apply { gravity = Gravity.CENTER; setPadding(0, 5.dp, 0, 0) }
         val volume = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            background = shape(card, 26f); elevation = 3.dp.toFloat()
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; background = shape(card, 26f); elevation = 3.dp.toFloat()
             addView(cardButton("＋", "KEY_VOLUP", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
             addView(textLabel("VOL", 11f, ink, true), LinearLayout.LayoutParams(-1, 22.dp))
             addView(cardButton("−", "KEY_VOLDOWN", 25f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
         }
         upper.addView(volume, LinearLayout.LayoutParams(66.dp, 116.dp).apply { setMargins(0, 2.dp, 4.dp, 2.dp) })
-
         val middle = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val r1 = LinearLayout(this)
         addWeighted(r1, cardButton("⌁\nMUTE", "KEY_MUTE", 11f), 53)
@@ -153,10 +155,8 @@ class MainActivity : Activity() {
         addWeighted(r2, cardButton("↶\nBACK", "KEY_RETURN", 11f), 53)
         middle.addView(r2)
         upper.addView(middle, LinearLayout.LayoutParams(0, 116.dp, 1f))
-
         val channel = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            background = shape(card, 26f); elevation = 3.dp.toFloat()
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; background = shape(card, 26f); elevation = 3.dp.toFloat()
             addView(cardButton("⌃", "KEY_CHUP", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
             addView(textLabel("CH", 11f, ink, true), LinearLayout.LayoutParams(-1, 22.dp))
             addView(cardButton("⌄", "KEY_CHDOWN", 24f, elevationDp = 0).apply { background = null }, LinearLayout.LayoutParams(-1, 47.dp))
@@ -168,12 +168,7 @@ class MainActivity : Activity() {
         root.addView(contentHost, LinearLayout.LayoutParams(-1, 210.dp).apply { setMargins(0, 3.dp, 0, 1.dp) })
         showDirectional()
 
-        val modeBar = LinearLayout(this).apply {
-            gravity = Gravity.CENTER
-            background = shape(Color.rgb(250, 251, 254), 25f, border)
-            setPadding(3.dp, 2.dp, 3.dp, 2.dp)
-            elevation = 1.dp.toFloat()
-        }
+        val modeBar = LinearLayout(this).apply { gravity = Gravity.CENTER; background = shape(Color.rgb(250, 251, 254), 25f, border); setPadding(3.dp, 2.dp, 3.dp, 2.dp); elevation = 1.dp.toFloat() }
         addWeighted(modeBar, cardButton("◉", size = 16f, radius = 20f, elevationDp = 0, action = { showDirectional() }), 38, marginDp = 1)
         addWeighted(modeBar, cardButton("▭", size = 16f, radius = 20f, elevationDp = 0, action = { showTouchpad() }), 38, marginDp = 1)
         addWeighted(modeBar, cardButton("123", size = 14f, radius = 20f, elevationDp = 0, action = { showNumbers() }), 38, marginDp = 1)
@@ -200,17 +195,26 @@ class MainActivity : Activity() {
         addWeighted(more, cardButton("CH-LIST", "KEY_CH_LIST", 9.2f), 36, marginDp = 2)
         root.addView(more)
 
+        val quickPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = shape(quickBg, 22f, null)
+            setPadding(6.dp, 5.dp, 6.dp, 5.dp)
+            elevation = 2.dp.toFloat()
+        }
         val quick1 = LinearLayout(this)
-        addWeighted(quick1, cardButton("prime video", size = 10.2f, radius = 18f, action = { remote.launchApp("3201512006785") }), 39, marginDp = 2)
-        addWeighted(quick1, cardButton("NETFLIX", size = 10.5f, radius = 18f, action = { remote.launchApp("11101200001") }), 39, marginDp = 2)
-        addWeighted(quick1, cardButton("▶ YouTube", size = 10.2f, radius = 18f, action = { remote.launchApp("111299001912") }), 39, marginDp = 2)
-        root.addView(quick1, LinearLayout.LayoutParams(-1, 43.dp).apply { setMargins(2.dp, 2.dp, 2.dp, 0) })
-
+        addWeighted(quick1, quickButton("prime video") { remote.launchApp("3201512006785") }, 35, marginDp = 2)
+        addWeighted(quick1, quickButton("NETFLIX") { remote.launchApp("11101200001") }, 35, marginDp = 2)
+        addWeighted(quick1, quickButton("▶  YouTube") { remote.launchApp("111299001912") }, 35, marginDp = 2)
+        quickPanel.addView(quick1, LinearLayout.LayoutParams(-1, 39.dp))
         val quick2 = LinearLayout(this)
-        addWeighted(quick2, cardButton("▦ APPS", size = 10.2f, radius = 18f, action = { remote.key("KEY_HOME") }), 39, marginDp = 2)
-        addWeighted(quick2, cardButton("▣ CAST", size = 10.2f, radius = 18f, action = { remote.key("KEY_SOURCE") }), 39, marginDp = 2)
-        addWeighted(quick2, cardButton("⌨ TECLADO", size = 10.2f, radius = 18f, action = { keyboardDialog() }), 39, marginDp = 2)
-        root.addView(quick2, LinearLayout.LayoutParams(-1, 43.dp).apply { setMargins(2.dp, 0, 2.dp, 0) })
+        addWeighted(quick2, quickButton("▦  APPS") { remote.key("KEY_SMART_HUB") }, 35, marginDp = 2)
+        addWeighted(quick2, quickButton("▣  CAST") {
+            try { startActivity(Intent("android.settings.CAST_SETTINGS")) }
+            catch (_: Exception) { remote.key("KEY_SOURCE") }
+        }, 35, marginDp = 2)
+        addWeighted(quick2, quickButton("⌨  TECLADO") { keyboardDialog() }, 35, marginDp = 2)
+        quickPanel.addView(quick2, LinearLayout.LayoutParams(-1, 39.dp))
+        root.addView(quickPanel, LinearLayout.LayoutParams(-1, 86.dp).apply { setMargins(2.dp, 3.dp, 2.dp, 0) })
     }
 
     private fun showDirectional() {
@@ -240,23 +244,12 @@ class MainActivity : Activity() {
 
     private fun showNumbers() {
         contentHost.removeAllViews()
-        val box = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(8.dp, 1.dp, 8.dp, 1.dp)
-        }
-        val rows = listOf(
-            listOf("1", "2", "3"), listOf("4", "5", "6"),
-            listOf("7", "8", "9"), listOf("PRE-CH", "0", "CH-LIST")
-        )
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(8.dp, 1.dp, 8.dp, 1.dp) }
+        val rows = listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"), listOf("PRE-CH", "0", "CH-LIST"))
         rows.forEach { items ->
             val row = LinearLayout(this)
             items.forEach { t ->
-                val key = when (t) {
-                    "PRE-CH" -> "KEY_PRECH"
-                    "CH-LIST" -> "KEY_CH_LIST"
-                    else -> "KEY_$t"
-                }
+                val key = when (t) { "PRE-CH" -> "KEY_PRECH"; "CH-LIST" -> "KEY_CH_LIST"; else -> "KEY_$t" }
                 addWeighted(row, cardButton(t, key, if (t.length == 1) 16f else 8.7f, radius = 20f), 40, marginDp = 2)
             }
             box.addView(row, LinearLayout.LayoutParams(-1, 46.dp))
@@ -265,18 +258,49 @@ class MainActivity : Activity() {
     }
 
     private fun keyboardDialog() {
-        val input = EditText(this).apply {
-            hint = "Escribe en tu TV"; minLines = 2
-            setPadding(18.dp, 14.dp, 18.dp, 14.dp)
-            background = shape(Color.WHITE, 18f, border)
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val shell = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(20.dp, 18.dp, 20.dp, 14.dp)
+            background = shape(Color.WHITE, 26f, null)
         }
-        AlertDialog.Builder(this).setTitle("Teclado").setView(input)
-            .setPositiveButton("ENVIAR") { _, _ -> remote.text(input.text.toString()) }
-            .setNegativeButton("CANCELAR", null).show()
+        val title = textLabel("Teclado", 20f, ink, true).apply { gravity = Gravity.START or Gravity.CENTER_VERTICAL }
+        shell.addView(title, LinearLayout.LayoutParams(-1, 36.dp))
+        val subtitle = textLabel("Escribe y envía directamente al TV", 11f, muted).apply { gravity = Gravity.START or Gravity.CENTER_VERTICAL }
+        shell.addView(subtitle, LinearLayout.LayoutParams(-1, 28.dp))
+        val input = EditText(this).apply {
+            hint = "Escribe aquí…"
+            textSize = 16f
+            setTextColor(ink)
+            setHintTextColor(muted)
+            singleLine = true
+            setPadding(16.dp, 0, 16.dp, 0)
+            background = shape(Color.rgb(248, 249, 252), 18f, border)
+        }
+        shell.addView(input, LinearLayout.LayoutParams(-1, 54.dp).apply { setMargins(0, 10.dp, 0, 14.dp) })
+        val actions = LinearLayout(this).apply { gravity = Gravity.END or Gravity.CENTER_VERTICAL }
+        val cancel = textLabel("CANCELAR", 12f, muted, true).apply {
+            isClickable = true; setPadding(16.dp, 0, 16.dp, 0); setOnClickListener { dialog.dismiss() }
+        }
+        val send = textLabel("ENVIAR", 12f, Color.WHITE, true).apply {
+            background = shape(accent, 18f, null); isClickable = true; setPadding(20.dp, 0, 20.dp, 0)
+            setOnClickListener { remote.text(input.text.toString()); dialog.dismiss() }
+        }
+        actions.addView(cancel, LinearLayout.LayoutParams(-2, 42.dp))
+        actions.addView(send, LinearLayout.LayoutParams(-2, 42.dp))
+        shell.addView(actions, LinearLayout.LayoutParams(-1, 46.dp))
+        dialog.setContentView(shell)
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            attributes = attributes.apply { width = (resources.displayMetrics.widthPixels * 0.88f).toInt(); dimAmount = 0.28f }
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        }
+        dialog.show()
+        dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.88f).toInt(), WindowManager.LayoutParams.WRAP_CONTENT)
         input.requestFocus()
-        input.postDelayed({
-            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-        }, 250)
+        input.postDelayed({ (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(input, InputMethodManager.SHOW_IMPLICIT) }, 180)
     }
 
     private fun requestNetworkPermissionAndDiscover() {
@@ -300,9 +324,7 @@ class MainActivity : Activity() {
                     tvs.size == 1 -> connectTv(tvs.first())
                     else -> {
                         val labels = tvs.map { "${it.name}\n${it.model} · ${it.ip}" }.toTypedArray()
-                        AlertDialog.Builder(this).setTitle("Selecciona tu Samsung TV")
-                            .setItems(labels) { _, which -> connectTv(tvs[which]) }
-                            .setNegativeButton("CANCELAR", null).show()
+                        AlertDialog.Builder(this).setTitle("Selecciona tu Samsung TV").setItems(labels) { _, which -> connectTv(tvs[which]) }.setNegativeButton("CANCELAR", null).show()
                     }
                 }
             } }
