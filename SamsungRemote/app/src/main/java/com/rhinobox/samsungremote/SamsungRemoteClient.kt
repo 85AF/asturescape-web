@@ -121,4 +121,15 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
             .put("TypeOfRemote", "SendInputString")
         ws?.send(JSONObject().put("method", "ms.remote.control").put("params", p).toString())
     }
+
+    fun launchApp(appId: String) {
+        val data = JSONObject()
+            .put("appId", appId)
+            .put("action_type", "DEEP_LINK")
+        val params = JSONObject()
+            .put("event", "ed.apps.launch")
+            .put("to", "host")
+            .put("data", data)
+        ws?.send(JSONObject().put("method", "ms.channel.emit").put("params", params).toString())
+    }
 }
