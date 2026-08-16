@@ -48,7 +48,7 @@ class MainActivity : Activity() {
 
     private fun shape(color: Int = soft, radius: Float = 28f, stroke: Int? = null): GradientDrawable {
         return GradientDrawable().apply {
-            cornerRadius = radius.dp.toFloat()
+            cornerRadius = radius * resources.displayMetrics.density
             setColor(color)
             if (stroke != null) setStroke(1.dp, stroke)
         }
