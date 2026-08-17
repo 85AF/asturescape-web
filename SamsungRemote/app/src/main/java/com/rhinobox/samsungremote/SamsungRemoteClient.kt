@@ -3,6 +3,7 @@ package com.rhinobox.samsungremote
 import android.content.Context
 import android.util.Base64
 import okhttp3.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
@@ -133,8 +134,6 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
         }
         if (ids.isEmpty()) return
 
-        // First use the TV's application REST endpoint. On many recent Tizen TVs
-        // this is more reliable than shortcut keys or websocket-only launches.
         Thread {
             var launched = false
             for (id in ids) {
@@ -144,7 +143,6 @@ class SamsungRemoteClient(private val onStatus: (String, Boolean) -> Unit) {
                 }
             }
             if (!launched) {
-                // Fallback to websocket app launch with every known ID.
                 ids.forEach { emitLaunch(it, "DEEP_LINK") }
                 ids.forEach { emitLaunch(it, "NATIVE_LAUNCH") }
             }
