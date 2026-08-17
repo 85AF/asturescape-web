@@ -20,10 +20,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Polish quick access UI
+        run: |
+          FILE="app/src/main/java/com/rhinobox/samsungremote/MainActivity.kt"
+          sed -i 's/private val quickBg = Color.rgb(12, 29, 52)/private val quickBg = card/' "$FILE"
+          sed -i 's/private val quickCard = Color.rgb(25, 48, 78)/private val quickCard = card/' "$FILE"
+          sed -i 's/textLabel(text, 10.4f, Color.WHITE, true)/textLabel(text, 10.4f, ink, true)/' "$FILE"
+          sed -i 's/shape(quickCard, 18f, Color.rgb(44, 68, 101))/shape(quickCard, 18f, border)/' "$FILE"
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: SamsungRemote-APK
           path: SamsungRemote/app/build/outputs/apk/debug/app-debug.apk
-# build-trigger: 2026-08-16
+# universal-build-trigger: 2026-08-17
